@@ -1,3 +1,7 @@
+// AVL BST
+#pragma once
+
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -76,15 +80,15 @@ int getBalance(Node* n){
 }
 
 
-Node* insert(Node* node, int key, Node* parent){
+Node* insertAVL(Node* node, int key, Node* parent){
     if(node == NULL){
         return initializeNode(key, parent);
     }
 
     if(key < node->key){
-        node->left = insert(node->left, key, node);
+        node->left = insertAVL(node->left, key, node);
     } else if(key > node->key){
-        node->right = insert(node->right, key, node);
+        node->right = insertAVL(node->right, key, node);
     } else {
         return node;
     }
@@ -114,6 +118,7 @@ Node* insert(Node* node, int key, Node* parent){
     return node;
 }
 
+
 void inorder(Node* root){
     if(root != NULL){
         inorder(root->left);
@@ -140,6 +145,7 @@ void printTree(Node* root, int space){
     printTree(root->left, space);
 }
 
+
 int main(){
     Node* root = NULL;
 
@@ -147,7 +153,7 @@ int main(){
     int n = sizeof(arr)/sizeof(arr[0]);
 
     for(int i = 0; i < n; i++){
-        root = insert(root, arr[i], NULL);
+        root = insertAVL(root, arr[i], NULL);
     }
 
     printTree(root, 0);

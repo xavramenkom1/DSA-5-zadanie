@@ -1,0 +1,50 @@
+int main(){
+    Node* root = NULL;
+    int arr[] = {10, 20, 5, 15, 25, 3, 7, 12, 18, 30};
+    int n = sizeof(arr)/sizeof(arr[0]);
+
+    for(int i = 0; i < n; i++){
+        insert(&root, arr[i]);
+    }
+
+    printf("Inorder: ");
+    inorder(root);
+    printf("\n\nTree structure:\n");
+    printTree(root, 0);
+
+    int key = 15;
+    Node* node = search(&root, key);
+
+    printf("\nAfter splay search for %d:\n", key);
+    printTree(root, 0);
+
+    delete(&root, 12);
+    printf("\nAfter deleting 12:\n");
+    printTree(root, 0);
+
+    delete(&root, 10);
+    printf("\nAfter deleting 10:\n");
+    printTree(root, 0);
+
+    return 0;
+}
+
+
+int main(){
+    Node* root = NULL;
+
+    int arr[] = {10, 20, 30, 40, 50, 25, 92, 85, 70, 60, 80, 90, 95, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500};
+    int n = sizeof(arr)/sizeof(arr[0]);
+
+    for(int i = 0; i < n; i++){
+        root = insert(root, arr[i], NULL);
+    }
+
+    printTree(root, 0);
+
+    printf("Root: %d\n", root->key);
+
+    printf("Inorder traversal: ");
+    inorder(root);
+    printf("\n");
+}
