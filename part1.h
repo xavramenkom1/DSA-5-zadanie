@@ -1,14 +1,12 @@
 // AVL BST
 #pragma once
 
-
-#include <stdio.h>
 #include <stdlib.h>
 
 typedef struct Node{ // Binarny strom
     int key;
-    struct Node* left;
-    struct Node* right;
+    struct Node* l;
+    struct Node* r;
     struct Node* parent;
     int height;
 } Node;
@@ -24,11 +22,23 @@ int height(Node* node){
     return node->height;
 }
 
+Node* minValueNode(Node* node){
+    Node* current = node;
+    while(current->l != NULL){
+        current = current->l;
+    }
+    return current;
+}
+
+int getBalance(Node* n){
+    return n ? height(n->l) - height(n->r) : 0;
+}
+
 Node* initializeNode(int key, Node* parent){
     Node* node = (Node*)malloc(sizeof(Node));
     node->key = key;
-    node->left = NULL;
-    node->right = NULL;
+    node->l = NULL;
+    node->r = NULL;
     node->parent = parent;
     node->height = 1; 
 
@@ -37,11 +47,11 @@ Node* initializeNode(int key, Node* parent){
 }
 
 Node* rightRotate(Node* y){
-    Node* x = y->left;
-    Node* T2 = x->right;
+    Node* x = y->l;
+    Node* T2 = x->r;
 
-    x->right = y;
-    y->left = T2;
+    x->r = y;
+    y->l = T2;
 
     if(T2 != NULL){
         T2->parent = y;
@@ -50,18 +60,18 @@ Node* rightRotate(Node* y){
     x->parent = y->parent;
     y->parent = x;
 
-    y->height = 1 + maxInt(height(y->left), height(y->right));
-    x->height = 1 + maxInt(height(x->left), height(x->right));
+    y->height = 1 + maxInt(height(y->l), height(y->r));
+    x->height = 1 + maxInt(height(x->l), height(x->r));
 
     return x;
 }
 
 Node* leftRotate(Node* x){
-    Node* y = x->right;
-    Node* z = y->left;
+    Node* y = x->r;
+    Node* z = y->l;
 
-    y->left = x;
-    x->right = z;
+    y->l = x;
+    x->r = z;
 
     if(z != NULL){
         z->parent = x;
@@ -70,97 +80,102 @@ Node* leftRotate(Node* x){
     y->parent = x->parent;
     x->parent = y;
 
-    x->height = 1 + maxInt(height(x->left), height(x->right));
-    y->height = 1 + maxInt(height(y->left), height(y->right));
+    x->height = 1 + maxInt(height(x->l), height(x->r));
+    y->height = 1 + maxInt(height(y->l), height(y->r));
 
     return y;
 }
-int getBalance(Node* n){
-    return n ? height(n->left) - height(n->right) : 0;
+
+Node* search(Node* root, int key){
+    if(root == NULL || root->key == key){
+        return root;
+    }
+
+    if(key < root->key){
+        return search(root->l, key);
+    } else {
+        return search(root->r, key);
+    }
 }
 
 
-Node* insertAVL(Node* node, int key, Node* parent){
+Node* balance(Node* node){
+    if(node == NULL) return node;
+
+    node->height = 1 + maxInt(height(node->l), height(node->r));
+
+    int bf = getBalance(node);
+
+    if(bf > 1 && getBalance(node->l) >= 0){
+        node = rightRotate(node);
+    }
+    else if(bf > 1 && getBalance(node->l) < 0){
+        node->l = leftRotate(node->l);
+        node = rightRotate(node);
+    }
+    else if(bf < -1 && getBalance(node->r) > 0){
+        node->r = rightRotate(node->r);
+        node = leftRotate(node);
+    }
+    else if(bf < -1 && getBalance(node->r) <= 0){
+        node = leftRotate(node);
+    }
+    if(node->l) node->l->parent = node;
+    if(node->r) node->r->parent = node;
+
+    return node;
+}
+
+Node* insert(Node* node, int key, Node* parent){
     if(node == NULL){
         return initializeNode(key, parent);
     }
 
     if(key < node->key){
-        node->left = insertAVL(node->left, key, node);
+        node->l = insert(node->l, key, node);
     } else if(key > node->key){
-        node->right = insertAVL(node->right, key, node);
+        node->r = insert(node->r, key, node);
     } else {
         return node;
     }
 
-    node->height = 1 + maxInt(height(node->left), height(node->right));
-
-    int balance = getBalance(node);
-
-    if(balance > 1 && key < node->left->key){
-        return rightRotate(node);
-    }
-
-    if(balance < -1 && key > node->right->key){
-        return leftRotate(node);
-    }
-
-    if(balance > 1 && key > node->left->key){
-        node->left = leftRotate(node->left);
-        return rightRotate(node);
-    }
-
-    if(balance < -1 && key < node->right->key){
-        node->right = rightRotate(node->right);
-        return leftRotate(node);
-    }
-
-    return node;
+    return balance(node);
 }
 
-
-void inorder(Node* root){
-    if(root != NULL){
-        inorder(root->left);
-        printf("%d ", root->key);
-        inorder(root->right);
-    }
-}
-
-void printTree(Node* root, int space){
+Node* deleteNode(Node* root, int key){
     if(root == NULL){
-        return;
+        return root;
     }
 
-    space += 5;
+    if(key < root->key){
+        root->l = deleteNode(root->l, key);
+        if(root->l) root->l->parent = root;
+    } 
+    else if(key > root->key){
+        root->r = deleteNode(root->r, key);
+        if(root->r) root->r->parent = root;
+    } 
+    else {
+        if(root->l == NULL || root->r == NULL){
+            Node* temp = root->l ? root->l : root->r;
 
-    printTree(root->right, space);
+            if(temp == NULL){
+                free(root);
+                return NULL;
+            } else {
+                temp->parent = root->parent;
+                free(root);
+                return temp;
+            }
+        } 
+        else {
+            Node* temp = minValueNode(root->r);
+            root->key = temp->key;
 
-    printf("\n");
-    for(int i = 5; i < space; i++){
-        printf(" ");
+            root->r = deleteNode(root->r, temp->key);
+            if(root->r) root->r->parent = root;
+        }
     }
-    printf("%d\n", root->key);
 
-    printTree(root->left, space);
-}
-
-
-int main(){
-    Node* root = NULL;
-
-    int arr[] = {10, 20, 30, 40, 50, 25, 92, 85, 70, 60, 80, 90, 95, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500};
-    int n = sizeof(arr)/sizeof(arr[0]);
-
-    for(int i = 0; i < n; i++){
-        root = insertAVL(root, arr[i], NULL);
-    }
-
-    printTree(root, 0);
-
-    printf("Root: %d\n", root->key);
-
-    printf("Inorder traversal: ");
-    inorder(root);
-    printf("\n");
+    return balance(root);
 }
