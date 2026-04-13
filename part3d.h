@@ -7,8 +7,15 @@
 typedef struct HashTable {
     int size;
     int* table;
+    //Pair* table; if we have key/value ht
 } HashTable;
 
+// typedef struct Pair {
+//     int key;
+//     int val;
+// } Pair;
+
+// If we have key/value ht, we can use this struct instead of int* table in HashTable struct
 
 int h1(int key, int size){
     return key % size;
@@ -32,7 +39,7 @@ HashTable* create(int size){
 
 void insert(HashTable* ht, int key){
     for(int i = 0; i < ht->size; i++){
-        int index = (h1(key, ht->size) + i * h2(key, ht->size)) % ht->size;
+        int index = (h1(key, ht->size) + i * h2(key, ht->size)) % ht->size; // double hashing
 
         if(ht->table[index] == -1 || ht->table[index] == -2){
             ht->table[index] = key;
@@ -49,10 +56,12 @@ int search(HashTable* ht, int key){
 
         if(ht->table[index] == -1){
             return 0; // nt found
+            // return -1; if we have key/value ht
         }
 
-        if(ht->table[index] == key){
+        if(ht->table[index] == key){ //found
             return 1;
+            // return ht->table[index].val; if we have key/value ht
         }
     }
 

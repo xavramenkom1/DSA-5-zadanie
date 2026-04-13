@@ -2,12 +2,13 @@
 
 typedef struct Node {
     int key;
+    int val; // don't need for tests.
     struct Node* next;
 } Node;
 
 typedef struct HashTable {
     int size;
-    Node** table;
+    Node** table; // array of ptrs to Node
 } HashTable;
 
 
@@ -19,6 +20,8 @@ int hash(int key, int size){
 HashTable* createTable(int size){
     HashTable* ht = (HashTable*)malloc(sizeof(HashTable));
     ht->size = size;
+
+
     ht->table = (Node**)malloc(sizeof(Node*) * size);
 
     for(int i = 0; i < size; i++){
@@ -28,15 +31,16 @@ HashTable* createTable(int size){
     return ht;
 }
 
-Node* createNode(int key){
+Node* createNode(int key){ //(int key, int val) if we have key/value ht
     Node* n = (Node*)malloc(sizeof(Node));
     n->key = key;
     n->next = NULL;
+    // n->val = val; // if we have key/value ht
     return n;
 }
 
 void insert(HashTable* ht, int key){
-    int index = hash(key, ht->size);
+    int index = hash(key, ht->size); // Get the index for the key
 
     Node* newNode = createNode(key);
 
@@ -52,11 +56,13 @@ volatile Node* search(HashTable* ht, int key){
     while(curr != NULL){
         if(curr->key == key){
             return curr;
+            // curr->val if we have key/value ht
         }
         curr = curr->next;
     }
 
     return NULL;
+    // return -1 if we have key/value ht
 }
 
 void deleteByKey(HashTable* ht, int key){

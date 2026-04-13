@@ -28,12 +28,9 @@ void rotateLeft(Node **root, Node *x)
 
     y->parent = x->parent;
 
-    if (!x->parent)
-        *root = y;
-    else if (x == x->parent->l)
-        x->parent->l = y;
-    else
-        x->parent->r = y;
+    if (!x->parent) *root = y;
+    else if (x == x->parent->l) x->parent->l = y;
+    else x->parent->r = y;
 
     y->l = x;
     x->parent = y;
@@ -49,12 +46,9 @@ void rotateRight(Node **root, Node *x)
 
     y->parent = x->parent;
 
-    if (!x->parent)
-        *root = y;
-    else if (x == x->parent->l)
-        x->parent->l = y;
-    else
-        x->parent->r = y;
+    if (!x->parent) *root = y;
+    else if (x == x->parent->l) x->parent->l = y;
+    else x->parent->r = y;
 
     y->r = x;
     x->parent = y;
@@ -67,29 +61,29 @@ void splay(Node **root, Node *x)
         Node *p = x->parent;
         Node *g = p->parent;
 
-        if (!g)
+        if (!g) // Zig
         {
             if (p->l == x)
                 rotateRight(root, p);
             else
                 rotateLeft(root, p);
         }
-        else if (g->l == p && p->l == x)
+        else if (g->l == p && p->l == x) // Zig-Zig
         {
             rotateRight(root, g);
             rotateRight(root, p);
         }
-        else if (g->r == p && p->r == x)
+        else if (g->r == p && p->r == x) // Zag-Zag
         {
             rotateLeft(root, g);
             rotateLeft(root, p);
         }
-        else if (g->r == p && p->l == x)
+        else if (g->r == p && p->l == x) // Zig-Zag
         {
             rotateRight(root, p);
             rotateLeft(root, g);
         }
-        else
+        else // Zag-Zig :)
         {
             rotateLeft(root, p);
             rotateRight(root, g);
@@ -121,12 +115,9 @@ Node *insert(Node **root, int key)
     newNode->l = newNode->r = NULL;
     newNode->parent = p;
 
-    if (!p)
-        *root = newNode;
-    else if (key < p->key)
-        p->l = newNode;
-    else
-        p->r = newNode;
+    if (!p) *root = newNode;
+    else if (key < p->key) p->l = newNode;
+    else p->r = newNode;
 
     splay(root, newNode);
     return newNode;
