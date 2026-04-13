@@ -68,22 +68,22 @@ void splay(Node **root, Node *x)
             else
                 rotateLeft(root, p);
         }
-        else if (g->l == p && p->l == x) // Zig-Zig
+        else if (g->l == p && p->l == x) // Zig-Zig (skos do lava a doleva)
         {
             rotateRight(root, g);
             rotateRight(root, p);
         }
-        else if (g->r == p && p->r == x) // Zag-Zag
+        else if (g->r == p && p->r == x) // Zag-Zag (skos doprava a doprava)
         {
             rotateLeft(root, g);
             rotateLeft(root, p);
         }
-        else if (g->r == p && p->l == x) // Zig-Zag
+        else if (g->r == p && p->l == x) // Zig-Zag (skos doleva a doprava)
         {
             rotateRight(root, p);
             rotateLeft(root, g);
         }
-        else // Zag-Zig :)
+        else // Zag-Zig :) (skos doprava a doleva)
         {
             rotateLeft(root, p);
             rotateRight(root, g);
@@ -93,20 +93,20 @@ void splay(Node **root, Node *x)
 
 Node *insert(Node **root, int key)
 {
-    Node *z = *root;
+    Node *n = *root;
     Node *p = NULL;
 
-    while (z)
+    while (n)
     {
-        p = z;
-        if (key < z->key)
-            z = z->l;
-        else if (key > z->key)
-            z = z->r;
-        else
+        p = n;
+        if (key < n->key)
+            n = n->l;
+        else if (key > n->key)
+            n = n->r;
+        else // key already exists
         {
-            splay(root, z);
-            return z;
+            splay(root, n);
+            return n;
         }
     }
 
@@ -125,17 +125,17 @@ Node *insert(Node **root, int key)
 
 Node *search(Node **root, int key)
 {
-    Node *z = *root;
-    while (z)
+    Node *n = *root;
+    while (n)
     {
-        if (key < z->key)
-            z = z->l;
-        else if (key > z->key)
-            z = z->r;
+        if (key < n->key)
+            n = n->l;
+        else if (key > n->key)
+            n = n->r;
         else
         {
-            splay(root, z);
-            return z;
+            splay(root, n);
+            return n;
         }
     }
     return NULL;
@@ -143,18 +143,18 @@ Node *search(Node **root, int key)
 
 void deleteNode(Node **root, int key)
 {
-    Node *node = search(root, key);
-    if (!node) return;
+    Node *n = search(root, key);
+    if (!n) return;
 
-    splay(root, node);
+    splay(root, n);
 
-    Node *LSub = node->l;
-    Node *RSub = node->r;
+    Node *LSub = n->l;
+    Node *RSub = n->r;
 
     if (LSub) LSub->parent = NULL;
     if (RSub) RSub->parent = NULL;
 
-    free(node);
+    free(n);
 
     if (!LSub)
     {

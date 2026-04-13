@@ -69,18 +69,6 @@ Node* leftRotate(Node* x){
     return y;
 }
 
-Node* search(Node* root, int key){
-    if(root == NULL || root->key == key){
-        return root;
-    }
-
-    if(key < root->key){
-        return search(root->l, key);
-    } else {
-        return search(root->r, key);
-    }
-}
-
 
 Node* balance(Node* n){
     if(!n) return n;
@@ -89,21 +77,21 @@ Node* balance(Node* n){
     int bf = getBalance(n);
 
     // LL
-    if(bf > 1 && getBalance(n->l) >= 0)
+    if(bf > 1 && getBalance(n->l) >= 0) // skos do lava
         return rightRotate(n);
 
     // LR
-    if(bf > 1 && getBalance(n->l) < 0){
+    if(bf > 1 && getBalance(n->l) < 0){ // skos do lava v parente a doprava u lavoho dieta
         n->l = leftRotate(n->l);
         return rightRotate(n);
     }
 
     // RR
-    if(bf < -1 && getBalance(n->r) <= 0)
+    if(bf < -1 && getBalance(n->r) <= 0) // skos doprava
         return leftRotate(n);
 
     // RL
-    if(bf < -1 && getBalance(n->r) > 0){
+    if(bf < -1 && getBalance(n->r) > 0){ // skos doprava v parente a doleva u pravoho dieta
         n->r = rightRotate(n->r);
         return leftRotate(n);
     }
@@ -114,14 +102,30 @@ Node* balance(Node* n){
 Node* insert(Node* n, int key){
     if(!n) return initializeNode(key);
 
-    if(key < n->key)
+    if(key < n->key){
         n->l = insert(n->l, key);
-    else if(key > n->key)
+    }
+
+    else if(key > n->key){
         n->r = insert(n->r, key);
-    else
+    }
+    else{
         return n;
+    }
 
     return balance(n);
+}
+
+Node* search(Node* root, int key){
+    if(root == NULL || root->key == key){
+        return root;
+    }
+
+    if(key < root->key){
+        return search(root->l, key);
+    } else {
+        return search(root->r, key);
+    }
 }
 
 Node* deleteNode(Node* root, int key){
