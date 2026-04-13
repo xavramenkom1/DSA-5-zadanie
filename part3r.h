@@ -44,7 +44,7 @@ void insert(HashTable* ht, int key){
     ht->table[index] = newNode;
 }
 
-Node* search(HashTable* ht, int key){
+volatile Node* search(HashTable* ht, int key){
     int index = hash(key, ht->size);
 
     Node* curr = ht->table[index];

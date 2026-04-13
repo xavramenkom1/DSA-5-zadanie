@@ -6,8 +6,8 @@
 typedef struct Node
 { // Binarny strom
     int key;
-    struct Node *left;
-    struct Node *right;
+    struct Node *l;
+    struct Node *r;
     struct Node *parent;
     int height;
 } Node;
@@ -19,40 +19,44 @@ int maxInt(int a, int b)
 
 void rotateLeft(Node **root, Node *x)
 {
-    if (x->right) return;
-    Node *y = x->right;
-    x->right = y->left;
+    if (!x || !x->r) return;
 
-    if (y->left) y->left->parent = x;
+    Node *y = x->r;
+    x->r = y->l;
+
+    if (y->l) y->l->parent = x;
+
     y->parent = x->parent;
-    
-    if (!x->parent) *root = y;
-    
-    else if (x == x->parent->left) x->parent->left = y;
-    
-    else x->parent->right = y;
-    
-    y->left = x;
+
+    if (!x->parent)
+        *root = y;
+    else if (x == x->parent->l)
+        x->parent->l = y;
+    else
+        x->parent->r = y;
+
+    y->l = x;
     x->parent = y;
 }
-
 void rotateRight(Node **root, Node *x)
 {
-    Node *y = x->left;
-    if (!y) return;
-    x->left = y->right;
-    
-    if (y->right) y->right->parent = x;
+    if (!x || !x->l) return;
+
+    Node *y = x->l;
+    x->l = y->r;
+
+    if (y->r) y->r->parent = x;
+
     y->parent = x->parent;
-    
-    
-    if (!x->parent) *root = y;
-    
-    else if(x == x->parent->left) x->parent->left = y;
-    
-    else x->parent->right = y;
-    
-    y->right = x;
+
+    if (!x->parent)
+        *root = y;
+    else if (x == x->parent->l)
+        x->parent->l = y;
+    else
+        x->parent->r = y;
+
+    y->r = x;
     x->parent = y;
 }
 
@@ -60,32 +64,35 @@ void splay(Node **root, Node *x)
 {
     while (x->parent)
     {
-        if (!x->parent->parent)
-        { // Zig
-            if (x->parent->left == x)
-                rotateRight(root, x->parent);
+        Node *p = x->parent;
+        Node *g = p->parent;
+
+        if (!g)
+        {
+            if (p->l == x)
+                rotateRight(root, p);
             else
-                rotateLeft(root, x->parent);
+                rotateLeft(root, p);
         }
-        else if (x->parent->left == x && x->parent->parent->left == x->parent)
-        { // Zig-Zig
-            rotateRight(root, x->parent->parent);
-            rotateRight(root, x->parent);
+        else if (g->l == p && p->l == x)
+        {
+            rotateRight(root, g);
+            rotateRight(root, p);
         }
-        else if (x->parent->right == x && x->parent->parent->right == x->parent)
-        { // Zig-Zig
-            rotateLeft(root, x->parent->parent);
-            rotateLeft(root, x->parent);
+        else if (g->r == p && p->r == x)
+        {
+            rotateLeft(root, g);
+            rotateLeft(root, p);
         }
-        else if (x->parent->left == x && x->parent->parent->right == x->parent)
-        { // Zig-Zag
-            rotateRight(root, x->parent);
-            rotateLeft(root, x->parent);
+        else if (g->r == p && p->l == x)
+        {
+            rotateRight(root, p);
+            rotateLeft(root, g);
         }
         else
-        { // Zag-Zig :)
-            rotateLeft(root, x->parent);
-            rotateRight(root, x->parent);
+        {
+            rotateLeft(root, p);
+            rotateRight(root, g);
         }
     }
 }
@@ -99,9 +106,9 @@ Node *insert(Node **root, int key)
     {
         p = z;
         if (key < z->key)
-            z = z->left;
+            z = z->l;
         else if (key > z->key)
-            z = z->right;
+            z = z->r;
         else
         {
             splay(root, z);
@@ -111,15 +118,15 @@ Node *insert(Node **root, int key)
 
     Node *newNode = (Node *)malloc(sizeof(Node));
     newNode->key = key;
-    newNode->left = newNode->right = NULL;
+    newNode->l = newNode->r = NULL;
     newNode->parent = p;
 
     if (!p)
         *root = newNode;
     else if (key < p->key)
-        p->left = newNode;
+        p->l = newNode;
     else
-        p->right = newNode;
+        p->r = newNode;
 
     splay(root, newNode);
     return newNode;
@@ -131,9 +138,9 @@ Node *search(Node **root, int key)
     while (z)
     {
         if (key < z->key)
-            z = z->left;
+            z = z->l;
         else if (key > z->key)
-            z = z->right;
+            z = z->r;
         else
         {
             splay(root, z);
@@ -146,34 +153,33 @@ Node *search(Node **root, int key)
 void deleteNode(Node **root, int key)
 {
     Node *node = search(root, key);
-    if (!node)
-        return;
+    if (!node) return;
 
     splay(root, node);
 
-    Node *leftSub = node->left;
-    Node *rightSub = node->right;
+    Node *LSub = node->l;
+    Node *RSub = node->r;
 
-    if (leftSub)
-        leftSub->parent = NULL;
-    if (rightSub)
-        rightSub->parent = NULL;
+    if (LSub) LSub->parent = NULL;
+    if (RSub) RSub->parent = NULL;
 
     free(node);
 
-    if (!leftSub)
+    if (!LSub)
     {
-        *root = rightSub;
+        *root = RSub;
+        return;
     }
-    else
-    {
-        Node *maxLeft = leftSub;
-        while (maxLeft->right)
-            maxLeft = maxLeft->right;
-        splay(&leftSub, maxLeft);
-        leftSub->right = rightSub;
-        if (rightSub)
-            rightSub->parent = leftSub;
-        *root = leftSub;
-    }
+
+    splay(&LSub, LSub);
+
+    Node *maxL = LSub;
+    while (maxL->r) maxL = maxL->r;
+
+    splay(&LSub, maxL);
+
+    LSub->r = RSub;
+    if (RSub) RSub->parent = LSub;
+
+    *root = LSub;
 }
